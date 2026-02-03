@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Portfolio: Ashritha Gollapalli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals & Soft Teal -->
+    <!-- Application Structure Plan: 
+         Designed as a "Digital Professional Dashboard" rather than a linear document.
+         1. Hero Section: Immediate identity and contact access.
+         2. Tabbed Navigation: Allows non-linear exploration of Profile, Skills, Journey (Timeline), and Projects.
+         3. Interactive Dashboard (Skills): Uses charts to visualize proficiency and balance between technical and soft skills, making the "Skills" list more engaging.
+         4. Timeline View: Merges Education and Certifications into a single chronological flow to show continuous learning.
+         5. Project Gallery: Uses filtering to distinguish between domain expertise (Web Dev vs ML).
+         This structure helps recruiters/viewers quickly find specific data points (grades, specific tech) while getting a holistic view of the candidate.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Tech Skills Bar Chart: Goal -> Compare proficiency. Viz -> Horizontal Bar Chart (Chart.js). Interaction -> Hover for details. Justification -> Clear comparison of hard skills.
+         2. Soft Skills Radar Chart: Goal -> Show well-roundedness. Viz -> Radar Chart (Chart.js). Justification -> Visualizes the 'balance' of personality traits mentioned.
+         3. Education Performance Chart: Goal -> Highlight academic excellence. Viz -> Vertical Bar Chart. Justification -> Normalizes different grading scales (GPA vs % vs Marks) to a single visual scale.
+         4. Project Filters: Goal -> Organize work by domain. Method -> JS Filter. Justification -> Users can focus on "Web Dev" or "AI/ML" specific interest.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7; /* Warm neutral background */
+            color: #1F2937;
+        }
+
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            border-bottom: 2px solid #0D9488; /* Teal-600 */
+            color: #0F766E; /* Teal-700 */
+            font-weight: 600;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header / Hero Section -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <div class="h-16 w-16 rounded-full border-2 border-teal-500 overflow-hidden shadow-sm flex-shrink-0">
+                        <img src="photo.jpg" alt="Ashritha Gollapalli" class="h-full w-full object-cover" onerror="this.parentNode.innerHTML='<div class=\'h-full w-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xl\'>AG</div>'">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 leading-tight">Ashritha Gollapalli</h1>
+                        <p class="text-sm text-teal-600 font-medium">Aspiring Full-Stack Developer & Data Analyst</p>
+                    </div>
+                </div>
+                <div class="flex space-x-6 text-sm text-gray-500">
+                    <a href="mailto:ashritha.g2004@gmail.com" class="hover:text-teal-600 transition flex items-center gap-1">
+                        <span>✉️</span> Email
+                    </a>
+                    <span class="flex items-center gap-1"><span>📍</span> Karimnagar, India</span>
+                    <a href="#" class="hover:text-teal-600 transition flex items-center gap-1">
+                        <span>🔗</span> LinkedIn
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="mt-6 flex space-x-8 overflow-x-auto pb-2 scrollbar-hide border-b border-gray-200">
+                <button onclick="switchTab('overview')" id="tab-overview" class="nav-item active whitespace-nowrap pb-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                    Overview & Profile
+                </button>
+                <button onclick="switchTab('skills')" id="tab-skills" class="nav-item whitespace-nowrap pb-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                    Skills Analytics
+                </button>
+                <button onclick="switchTab('journey')" id="tab-journey" class="nav-item whitespace-nowrap pb-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                    Education & Journey
+                </button>
+                <button onclick="switchTab('projects')" id="tab-projects" class="nav-item whitespace-nowrap pb-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+                    Projects & Works
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- SECTION: OVERVIEW -->
+        <section id="view-overview" class="space-y-8 animate-fade-in">
+            <div class="bg-white rounded-xl shadow-sm p-6 md:p-8 border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span>👋</span> Career Objective
+                </h2>
+                <p class="text-gray-600 leading-relaxed text-lg">
+                    Motivated <span class="font-semibold text-teal-700">B.Tech Computer Science final-year student</span> with strong skills in Python, SQL, and full-stack web development. I possess proven teamwork and leadership experience from academic projects and hackathons. I am currently seeking an entry-level opportunity to contribute to technology-driven solutions while continuously improving my professional and interpersonal skills.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Quick Stat 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center card-hover">
+                    <div class="text-4xl mb-2">🎓</div>
+                    <div class="text-2xl font-bold text-gray-900">90%</div>
+                    <div class="text-sm text-gray-500">B.Tech Aggregate</div>
+                </div>
+                <!-- Quick Stat 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center card-hover">
+                    <div class="text-4xl mb-2">🛠️</div>
+                    <div class="text-2xl font-bold text-gray-900">MERN & Python</div>
+                    <div class="text-sm text-gray-500">Core Tech Stack</div>
+                </div>
+                <!-- Quick Stat 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center card-hover">
+                    <div class="text-4xl mb-2">🏆</div>
+                    <div class="text-2xl font-bold text-gray-900">2</div>
+                    <div class="text-sm text-gray-500">Major Hackathons</div>
+                </div>
+            </div>
+
+            <!-- Achievements Highlights -->
+            <div class="bg-teal-50 rounded-xl p-6 md:p-8 border border-teal-100">
+                <h3 class="text-lg font-bold text-teal-900 mb-4">✨ Key Achievements</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3">
+                        <span class="mt-1 text-teal-600">★</span>
+                        <div>
+                            <span class="font-semibold text-gray-900">IBM National Level Hackathon</span>
+                            <p class="text-sm text-gray-600">Active Participant showcasing problem-solving skills.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="mt-1 text-teal-600">★</span>
+                        <div>
+                            <span class="font-semibold text-gray-900">India Codex 2025 by Cardano</span>
+                            <p class="text-sm text-gray-600">Participant in blockchain and coding challenge.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SECTION: SKILLS -->
+        <section id="view-skills" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-teal-500">
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Skills Analysis</h2>
+                <p class="text-gray-600">
+                    A visual breakdown of technical competencies and soft skills based on my academic focus and project experience. 
+                    Interactive charts below visualize proficiency levels.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Tech Skills Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Technical Proficiency</h3>
+                    <div class="chart-container">
+                        <canvas id="techSkillsChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-500 text-center">
+                        * Proficiency levels estimated based on project usage and curriculum focus.
+                    </div>
+                </div>
+
+                <!-- Soft Skills Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Professional Attributes</h3>
+                    <div class="chart-container">
+                        <canvas id="softSkillsChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-500 text-center">
+                        Key attributes demonstrated during hackathons and team projects.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Skills List -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-3 border-b pb-2">Languages & DB</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Python</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">JavaScript</span>
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">SQL</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">HTML5/CSS3</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-3 border-b pb-2">Frameworks & Stack</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">MERN Stack</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">React.js</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">Node.js</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">Express</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">MongoDB</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-3 border-b pb-2">Tools & Concepts</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Data Fundamentals</span>
+                        <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">MS Office Suite</span>
+                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Machine Learning Basics</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: JOURNEY (Education & Certs) -->
+        <section id="view-journey" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Academic Journey & Learning</h2>
+                <p class="text-gray-600">
+                    A timeline view of my education history and continuous professional development through certifications.
+                </p>
+            </div>
+
+            <!-- Academic Performance Chart -->
+             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Academic Performance Overview</h3>
+                <div class="chart-container h-64">
+                    <canvas id="educationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Timeline Container -->
+            <div class="relative border-l-2 border-gray-200 ml-4 space-y-8 pb-8">
+                
+                <!-- Timeline Item: B.Tech -->
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white">
+                        🎓
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-blue-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Bachelor of Technology</h3>
+                            <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">2022 - Present</span>
+                        </div>
+                        <p class="text-gray-700 font-medium">Computer Science and Engineering</p>
+                        <p class="text-gray-500 text-sm">Chaitanya Deemed to be University, Warangal</p>
+                        <div class="mt-3 inline-block bg-green-50 text-green-700 text-sm font-bold px-3 py-1 rounded-full">
+                            Score: 90%
+                        </div>
+                    </div>
+                </div>
+
+                
+                
+
+                <!-- Timeline Item: Cert Infosys -->
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 ring-4 ring-white">
+                        📜
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-orange-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Angular FullStack</h3>
+                            <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">2025</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">Infosys SpringBoard</p>
+                    </div>
+                </div>
+
+
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 ring-4 ring-white">
+                        📜
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-orange-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Modern Web App with MERN NextGen</h3>
+                            <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">2025</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">Specialized Certification</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item: Cert Cisco -->
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 ring-4 ring-white">
+                        📜
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-orange-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Networking Essentials</h3>
+                            <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">2024</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">CISCO</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item: Cert Python -->
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 ring-4 ring-white">
+                        📜
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-orange-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Python Fundamentals</h3>
+                            <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">2023</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">IBM</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item: Intermediate -->
+                <div class="mb-8 ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white">
+                        🏫
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-blue-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Intermediate (MPC)</h3>
+                            <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">2020 - 2022</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">Sr Junior College, Karimnagar</p>
+                        <div class="mt-3 inline-block bg-green-50 text-green-700 text-sm font-bold px-3 py-1 rounded-full">
+                            Score: 972/1000 (97.2%)
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Timeline Item: 10th -->
+                 <div class="ml-6 relative group">
+                    <span class="absolute -left-10 mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white">
+                        🏫
+                    </span>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 group-hover:border-blue-300 transition">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-lg font-bold text-gray-900">SSC (10th Grade)</h3>
+                            <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">2019 - 2020</span>
+                        </div>
+                        <p class="text-gray-500 text-sm">Telangana State Model School, Karimnagar</p>
+                        <div class="mt-3 inline-block bg-green-50 text-green-700 text-sm font-bold px-3 py-1 rounded-full">
+                            GPA: 10/10
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: PROJECTS -->
+        <section id="view-projects" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-1">Project Portfolio</h2>
+                    <p class="text-gray-600 text-sm">Showcasing web development and machine learning applications.</p>
+                </div>
+                <div class="flex space-x-2 bg-gray-100 p-1 rounded-lg">
+                    <button onclick="filterProjects('all')" id="filter-all" class="filter-btn px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow text-gray-800 transition">All</button>
+                    <button onclick="filterProjects('web')" id="filter-web" class="filter-btn px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-800 transition">Web Dev</button>
+                    <button onclick="filterProjects('ml')" id="filter-ml" class="filter-btn px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-800 transition">AI/ML</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Project 1: Civix -->
+                <div class="project-card web bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 flex flex-col card-hover">
+                    <div class="h-2 bg-indigo-500 w-full"></div>
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-gray-900">Civix: Digital Civic Engagement</h3>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full font-bold">Web App</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                            A web-based application addressing the lack of accessible digital tools for civic interaction. Engineered a user-friendly interface for citizens to launch petitions and gather digital signatures.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tech Focus</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">User Interface Design</span>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Web Development</span>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Civic Tech</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                        <span class="text-xs font-medium text-gray-500">Key Outcome: Enhanced digital democracy tools.</span>
+                    </div>
+                </div>
+
+                <!-- Project 2: Deepfake -->
+                <div class="project-card ml bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 flex flex-col card-hover">
+                    <div class="h-2 bg-purple-500 w-full"></div>
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-gray-900">Deepfake Multimedia Detection</h3>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold">Machine Learning</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                            Developed a security system to detect deepfake images, videos, and audios using advanced machine learning techniques, contributing to enhanced digital media integrity.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tech Focus</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Python</span>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Machine Learning</span>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Digital Security</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                        <span class="text-xs font-medium text-gray-500">Key Outcome: Improved media verification.</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-auto py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400 text-sm mb-2">Ashritha Gollapalli © 2026</p>
+            <p class="text-gray-500 text-xs">Generated Interactive Portfolio</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const appState = {
+            currentTab: 'overview',
+            projectFilter: 'all'
+        };
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Update State
+            appState.currentTab = tabId;
+
+            // Hide all sections
+            ['overview', 'skills', 'journey', 'projects'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+                document.getElementById(`tab-${id}`).classList.remove('active', 'border-teal-600', 'text-teal-700', 'font-bold');
+                document.getElementById(`tab-${id}`).classList.add('text-gray-500');
+            });
+
+            // Show selected section
+            const selectedSection = document.getElementById(`view-${tabId}`);
+            selectedSection.classList.remove('hidden');
+            
+            // Highlight Tab
+            const selectedTab = document.getElementById(`tab-${tabId}`);
+            selectedTab.classList.add('active', 'border-teal-600', 'text-teal-700', 'font-bold');
+            selectedTab.classList.remove('text-gray-500');
+
+            // Trigger Chart renders if Skills or Journey tab is opened (to ensure correct sizing)
+            if(tabId === 'skills') {
+                setTimeout(renderSkillsCharts, 50); 
+            }
+            if(tabId === 'journey') {
+                setTimeout(renderJourneyCharts, 50);
+            }
+        }
+
+        // --- Project Filter Logic ---
+        function filterProjects(category) {
+            appState.projectFilter = category;
+            
+            // Update Buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow', 'text-gray-800');
+                btn.classList.add('text-gray-500');
+            });
+            document.getElementById(`filter-${category}`).classList.add('bg-white', 'shadow', 'text-gray-800');
+            document.getElementById(`filter-${category}`).classList.remove('text-gray-500');
+
+            // Filter Cards
+            const cards = document.querySelectorAll('.project-card');
+            cards.forEach(card => {
+                if (category === 'all') {
+                    card.classList.remove('hidden');
+                } else {
+                    if (card.classList.contains(category)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // --- Chart Rendering Logic ---
+        let techChartInstance = null;
+        let softChartInstance = null;
+        let eduChartInstance = null;
+
+        function renderSkillsCharts() {
+            if(techChartInstance) return; // Prevent re-rendering
+
+            // 1. Technical Skills Bar Chart
+            const ctxTech = document.getElementById('techSkillsChart').getContext('2d');
+            techChartInstance = new Chart(ctxTech, {
+                type: 'bar',
+                data: {
+                    labels: ['Python', 'SQL', 'HTML/CSS', 'MERN Stack', 'Data Fundamentals'],
+                    datasets: [{
+                        label: 'Proficiency Level (Estimated)',
+                        data: [90, 85, 95, 80, 85], // Estimated values based on "Strong skills" description
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)', // Blue
+                            'rgba(99, 102, 241, 0.7)', // Indigo
+                            'rgba(245, 158, 11, 0.7)', // Amber
+                            'rgba(16, 185, 129, 0.7)', // Green
+                            'rgba(139, 92, 246, 0.7)'  // Purple
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(99, 102, 241)',
+                            'rgb(245, 158, 11)',
+                            'rgb(16, 185, 129)',
+                            'rgb(139, 92, 246)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar chart
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw + '% Confidence';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // 2. Soft Skills Radar Chart
+            const ctxSoft = document.getElementById('softSkillsChart').getContext('2d');
+            softChartInstance = new Chart(ctxSoft, {
+                type: 'radar',
+                data: {
+                    labels: ['Teamwork', 'Adaptability', 'Communication', 'Leadership', 'Problem Solving'],
+                    datasets: [{
+                        label: 'Soft Skill Balance',
+                        data: [90, 85, 80, 85, 88], // Estimated based on Achievements & Objectives
+                        fill: true,
+                        backgroundColor: 'rgba(20, 184, 166, 0.2)', // Teal
+                        borderColor: 'rgb(20, 184, 166)',
+                        pointBackgroundColor: 'rgb(20, 184, 166)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(20, 184, 166)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 50,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderJourneyCharts() {
+             if(eduChartInstance) return;
+
+             // 3. Education Performance Chart
+             const ctxEdu = document.getElementById('educationChart').getContext('2d');
+             eduChartInstance = new Chart(ctxEdu, {
+                 type: 'bar',
+                 data: {
+                     labels: ['B.Tech (Ongoing)', 'Intermediate (12th)', 'SSC (10th)'],
+                     datasets: [{
+                         label: 'Academic Performance (%)',
+                         data: [90, 97.2, 100], // Normalized 10GPA to 100%, 972/1000 to 97.2%
+                         backgroundColor: [
+                             'rgba(59, 130, 246, 0.6)',
+                             'rgba(16, 185, 129, 0.6)',
+                             'rgba(245, 158, 11, 0.6)'
+                         ],
+                         borderColor: [
+                             'rgb(59, 130, 246)',
+                             'rgb(16, 185, 129)',
+                             'rgb(245, 158, 11)'
+                         ],
+                         borderWidth: 1
+                     }]
+                 },
+                 options: {
+                     responsive: true,
+                     maintainAspectRatio: false,
+                     scales: {
+                         y: {
+                             beginAtZero: true,
+                             max: 100,
+                             title: {
+                                 display: true,
+                                 text: 'Percentage / Equivalent'
+                             }
+                         }
+                     },
+                     plugins: {
+                         tooltip: {
+                             callbacks: {
+                                 afterBody: function(context) {
+                                     return "Consistently High Academic Standing";
+                                 }
+                             }
+                         }
+                     }
+                 }
+             });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial render state
+            switchTab('overview');
+        });
+
+    </script>
+</body>
+</html>
